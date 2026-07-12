@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisShare - Zero-Knowledge E2EE File Sharing</title>
+    <!-- Outfit Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="background-decor">
+        <div class="circle c1"></div>
+        <div class="circle c2"></div>
+        <div class="circle c3"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-shield-halved logo-icon"></i>
+                <h1>Aegis<span>Share</span></h1>
+            </div>
+            <p class="tagline">Zero-Knowledge End-to-End Encrypted File Sharing</p>
+        </header>
+
+        <main class="app-main">
+            <!-- 1. UPLOAD VIEW -->
+            <section id="upload-view" class="card active">
+                <div class="drop-zone" id="drop-zone">
+                    <input type="file" id="file-input" class="file-input" hidden>
+                    <div class="drop-zone-content" id="drop-zone-prompt">
+                        <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+                        <h3>Drag & drop your file here</h3>
+                        <p>or <span class="browse-btn">browse files</span></p>
+                        <span class="file-limit-lbl">Max file size: 100MB</span>
+                    </div>
+                    <div class="drop-zone-content hidden" id="drop-zone-file-info">
+                        <i class="fa-solid fa-file-shield file-icon"></i>
+                        <h3 id="selected-file-name">filename.zip</h3>
+                        <p id="selected-file-size">0.00 MB</p>
+                        <button type="button" class="remove-file-btn" id="remove-file-btn">
+                            <i class="fa-solid fa-xmark"></i> Remove
+                        </button>
+                    </div>
+                </div>
+
+                <div class="options-container" id="options-container">
+                    <!-- Expiry Selector -->
+                    <div class="option-group">
+                        <label for="expiry-select">
+                            <i class="fa-regular fa-clock"></i> Expiry Link
+                        </label>
+                        <select id="expiry-select" class="form-control">
+                            <option value="300">5 Minutes</option>
+                            <option value="3600" selected>1 Hour</option>
+                            <option value="86400">24 Hours</option>
+                            <option value="604800">7 Days</option>
+                        </select>
+                    </div>
+
+                    <!-- Self Destruct -->
+                    <div class="option-group checkbox-group">
+                        <label class="switch">
+                            <input type="checkbox" id="self-destruct-chk">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="checkbox-label">
+                            <i class="fa-solid fa-bomb text-danger"></i> Self-destruct after first download
+                        </span>
+                    </div>
+
+                    <!-- Password Toggle -->
+                    <div class="option-group checkbox-group">
+                        <label class="switch">
+                            <input type="checkbox" id="password-toggle-chk">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="checkbox-label">
+                            <i class="fa-solid fa-lock"></i> Protect with custom password
+                        </span>
+                    </div>
+
+                    <!-- Password Input Container (Slides down) -->
+                    <div class="password-input-wrapper hidden" id="password-input-wrapper">
+                        <div class="password-field">
+                            <input type="password" id="upload-password" placeholder="Enter custom decryption password" class="form-control">
+                            <i class="fa-solid fa-eye-slash toggle-pw-icon" id="toggle-upload-pw"></i>
+                        </div>
+                        <p class="pw-hint"><i class="fa-solid fa-circle-info"></i> The share link won't contain the key. Recipients must enter this password.</p>
+                    </div>
+
+                    <!-- Submit Action -->
+                    <button type="button" class="action-btn" id="upload-action-btn" disabled>
+                        <i class="fa-solid fa-lock-open"></i> Select a file to encrypt
+                    </button>
+                </div>
+
+                <!-- Encryption & Upload Progress (Hidden by default) -->
+                <div class="progress-container hidden" id="upload-progress-container">
+                    <div class="progress-header">
+                        <span id="progress-status-lbl">Encrypting file client-side...</span>
+                        <span id="progress-pct-lbl">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="upload-progress-bar"></div>
+                    </div>
+                    <div class="progress-steps">
+                        <div class="step-indicator" id="step-keygen"><i class="fa-solid fa-circle-check"></i> Key Generation</div>
+                        <div class="step-indicator" id="step-encrypt"><i class="fa-solid fa-circle-check"></i> AES-256 Encryption</div>
+                        <div class="step-indicator" id="step-upload"><i class="fa-solid fa-circle-check"></i> Server Upload</div>
+                    </div>
+                </div>
+
+                <!-- Sharing Link Output (Hidden by default) -->
+                <div class="result-container hidden" id="upload-result-container">
+                    <div class="success-banner">
+                        <i class="fa-solid fa-circle-check success-icon"></i>
+                        <h3>File Encrypted & Uploaded Successfully!</h3>
+                        <p>The file is stored securely and cannot be decrypted by anyone without the key.</p>
+                    </div>
+
+                    <div class="share-box">
+                        <label for="share-url">Secure Share Link</label>
+                        <div class="copy-input-group">
+                            <input type="text" id="share-url" readonly class="form-control">
+                            <button type="button" class="copy-btn" id="copy-share-url-btn">
+                                <i class="fa-regular fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="security-warning">
+                        <p><i class="fa-solid fa-triangle-exclamation"></i> <strong>Zero-Knowledge Warning:</strong> Make sure to copy the share link now. Since the key/password is never sent to the server, we cannot recover it if you lose the link!</p>
+                    </div>
+
+                    <button type="button" class="secondary-btn" id="upload-another-btn">
+                        <i class="fa-solid fa-arrow-left"></i> Share Another File
+                    </button>
+                </div>
+            </section>
+
+            <!-- 2. DOWNLOAD / DECRYPT VIEW -->
+            <section id="download-view" class="card">
+                <div class="download-header-icon">
+                    <i class="fa-solid fa-file-shield shield-animated"></i>
+                </div>
+
+                <h2 class="view-title">Secure Download</h2>
+                
+                <!-- Loading State -->
+                <div class="info-status-msg" id="download-loading-status">
+                    <i class="fa-solid fa-circle-notch fa-spin text-accent"></i>
+                    <p>Fetching secure file metadata...</p>
+                </div>
+
+                <!-- Error / NotFound State -->
+                <div class="info-status-msg hidden" id="download-error-status">
+                    <i class="fa-solid fa-circle-exclamation text-danger error-icon"></i>
+                    <h3 id="error-title">File Not Found</h3>
+                    <p id="error-desc">The link may have expired, reached its download limit, or been deleted.</p>
+                    <a href="/" class="secondary-btn home-link"><i class="fa-solid fa-home"></i> Go to Share App</a>
+                </div>
+
+                <!-- Decryption & Download Ready state -->
+                <div class="download-content hidden" id="download-ready-container">
+                    <div class="file-card-preview">
+                        <div class="file-icon-box">
+                            <i class="fa-solid fa-file-lines fa-3x" id="download-file-icon"></i>
+                        </div>
+                        <div class="file-details-text">
+                            <h3 id="download-file-name">decrypting-metadata...</h3>
+                            <p id="download-file-size">0.0 MB</p>
+                        </div>
+                    </div>
+
+                    <div class="download-details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Security:</span>
+                            <span class="detail-value text-success"><i class="fa-solid fa-lock"></i> AES-GCM-256 E2EE</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Expires:</span>
+                            <span class="detail-value" id="download-file-expiry">calculating...</span>
+                        </div>
+                        <div class="detail-item hidden" id="download-self-destruct-warning">
+                            <span class="detail-value text-danger w-full text-center">
+                                <i class="fa-solid fa-bomb"></i> Will self-destruct immediately after download!
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Password Required Screen (If key not in URL) -->
+                    <div class="password-prompt-container hidden" id="download-password-prompt">
+                        <p class="pw-required-text">This share is password-protected. Enter password to unlock file.</p>
+                        <div class="password-field">
+                            <input type="password" id="download-password" placeholder="Enter decryption password" class="form-control">
+                            <i class="fa-solid fa-eye-slash toggle-pw-icon" id="toggle-download-pw"></i>
+                        </div>
+                    </div>
+
+                    <button type="button" class="action-btn download-btn" id="decrypt-download-btn">
+                        <i class="fa-solid fa-unlock-keyhole"></i> Decrypt & Download File
+                    </button>
+                </div>
+
+                <!-- Decryption / Download Progress -->
+                <div class="progress-container hidden" id="download-progress-container">
+                    <div class="progress-header">
+                        <span id="download-progress-status">Downloading encrypted file payload...</span>
+                        <span id="download-progress-pct">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="download-progress-bar"></div>
+                    </div>
+                    <div class="progress-steps">
+                        <div class="step-indicator" id="download-step-fetch"><i class="fa-solid fa-circle-check"></i> Fetching Ciphertext</div>
+                        <div class="step-indicator" id="download-step-decrypt"><i class="fa-solid fa-circle-check"></i> Local Decryption</div>
+                        <div class="step-indicator" id="download-step-save"><i class="fa-solid fa-circle-check"></i> File Assembly</div>
+                    </div>
+                </div>
+
+                <!-- Decrypted Success State -->
+                <div class="result-container hidden" id="download-success-container">
+                    <div class="success-banner">
+                        <i class="fa-solid fa-circle-check success-icon"></i>
+                        <h3>File Decrypted & Downloaded!</h3>
+                        <p>The file was successfully decrypted client-side and saved to your device.</p>
+                    </div>
+                    <a href="/" class="secondary-btn"><i class="fa-solid fa-arrow-right"></i> Upload a New File</a>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p><i class="fa-solid fa-shield-halved"></i> 100% Client-Side End-to-End Cryptography. All keys remain private.</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

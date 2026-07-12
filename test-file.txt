@@ -1,0 +1,3 @@
+CONFIDENTIAL: AegisShare zero-knowledge end-to-end encryption works perfectly!
+This file was encrypted client-side using AES-GCM 256-bit keys.
+Only individuals with the correct key or password can view this file content.
