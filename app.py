@@ -10,8 +10,8 @@ from flask_cors import CORS
 app = Flask(__name__, static_folder='public', static_url_path='')
 CORS(app)
 
-# Limit uploads to 100MB
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
+# Limit uploads to 2GB
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024 * 1024
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)

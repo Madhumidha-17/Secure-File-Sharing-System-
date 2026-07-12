@@ -284,8 +284,8 @@ fileInput.addEventListener('change', () => {
 });
 
 function handleFileSelect(file) {
-    if (file.size > 100 * 1024 * 1024) {
-        alert("Maximum file size allowed is 100MB!");
+    if (file.size > 2 * 1024 * 1024 * 1024) {
+        alert("Maximum file size allowed is 2GB!");
         return;
     }
     selectedFile = file;
